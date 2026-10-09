@@ -190,6 +190,47 @@
 - passwordHash אינו מוחזר בתגובת ה-API
 - נבדקה סיסמה קצרה מדי והוחזר `PASSWORD_TOO_SHORT`
 - נבדקה הרשמה מוצלחת עם סיסמה ונוצר משתמש חדש
+
+## Backup & Recovery - 2026-10-09
+
+Backup system established:
+
+- Source code backed up to private GitHub repository.
+- Local PostgreSQL dump created successfully.
+- PostgreSQL dump copied to Google Drive.
+- `.env` backed up inside an AES-encrypted 7-Zip archive.
+- Encrypted `.env` archive copied to Google Drive.
+- `backups/` added to `.gitignore`.
+- Git main branch is synchronized with GitHub.
+- Disaster recovery procedure documented/planned.
+
+## Current Development Status
+
+Onboarding with Email + Password is complete enough to move forward.
+
+Completed:
+- PostgreSQL + Prisma
+- Core User / Business / Membership models
+- Multi-tenant membership structure
+- Business onboarding
+- Input validation
+- Stable API error codes
+- Password hashing with scrypt
+- Duplicate email protection
+- Database connectivity checks
+- Initial backup and recovery system
+
+## Next Step
+
+Build Authentication / Login with Email + Password.
+
+Planned flow:
+1. Find user by normalized email.
+2. Verify that the user has a passwordHash.
+3. Verify supplied password using verifyPassword().
+4. Return a safe authentication result.
+5. Then choose and implement the persistent authentication method
+   (session/cookie or token).
 ## מצב נוכחי
 
 ה-Backend הבסיסי עובד ונבדק בהצלחה.
