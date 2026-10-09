@@ -10,3 +10,4 @@ generated/
 dist/
 *.log
 skills-lock.json
+backups/
