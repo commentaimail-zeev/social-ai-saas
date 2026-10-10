@@ -19,6 +19,7 @@ model User {
   name         String?
   passwordHash String?
   memberships  Membership[]
+  sessions     Session[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,4 +49,17 @@ model Membership {
   @@unique([userId, businessId])
   @@index([userId])
   @@index([businessId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

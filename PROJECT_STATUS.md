@@ -366,3 +366,40 @@ PowerShell חוסם את `npm.ps1` בגלל Execution Policy.
 
 המטרה היא לעבוד בצורה יותר אוטונומית, יעילה ומהירה,
 אבל בלי לזרוק מספר גדול של משימות לביצוע בבת אחת ובלי לאבד שליטה על הארכיטקטורה.
+
+## Authentication Complete - 2026-10-10
+
+Basic Email + Password authentication is now working end-to-end.
+
+Completed:
+
+- Added Session model to Prisma
+- Added migration: `add_sessions`
+- Sessions are stored in PostgreSQL
+- Session tokens are generated securely
+- Only SHA-256 token hashes are stored in the database
+- Login creates a server-side session
+- Login sends an HttpOnly cookie named `social_ai_session`
+- Session cookie expires after 7 days
+- Cookie uses SameSite=Lax
+- Cookie will use Secure automatically in production
+- Added `GET /auth/me`
+- `/auth/me` identifies the currently logged-in user
+- Added `POST /auth/logout`
+- Logout deletes the server-side session
+- Logout clears the session cookie
+- Invalid or missing sessions return HTTP 401 with `UNAUTHENTICATED`
+- Wrong password and unknown email both return HTTP 401 with `INVALID_CREDENTIALS`
+- Password hashes and session hashes are never returned by the API
+- Full login -> session -> /auth/me -> logout -> unauthenticated flow tested successfully
+- TypeScript check passes with `npx.cmd tsc --noEmit`
+
+## Next Development Step
+
+Build reusable authentication protection for private API routes.
+
+Goal:
+
+- Protected routes should automatically require a valid session
+- Server should know which user is making the request
+- Then begin authorization / business access control so users can only access businesses they belong to

@@ -1,5 +1,11 @@
-import type { FastifyInstance } from "fastify";
+ import type { FastifyInstance } from "fastify";
+
 import { authenticateUser } from "../services/auth.service.js";
+import {
+  createSession,
+  deleteSession,
+  getUserFromSessionToken,
+} from "../services/session.service.js";
 
 interface LoginBody {
   email: string;
@@ -39,9 +45,58 @@ export async function authRoutes(app: FastifyInstance) {
       });
     }
 
+    const session = await createSession(user.id);
+
+    reply.setCookie("social_ai_session", session.token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      expires: session.expiresAt,
+    });
+
     return reply.code(200).send({
       authenticated: true,
       user,
+    });
+  });
+
+  app.get("/auth/me", async (request, reply) => {
+    const token = request.cookies.social_ai_session;
+
+    if (!token) {
+      return reply.code(401).send({
+        code: "UNAUTHENTICATED",
+      });
+    }
+
+    const user = await getUserFromSessionToken(token);
+
+    if (!user) {
+      return reply.code(401).send({
+        code: "UNAUTHENTICATED",
+      });
+    }
+
+    return reply.code(200).send({
+      authenticated: true,
+      user,
+    });
+  });
+
+  app.post("/auth/logout", async (request, reply) => {
+    const token = request.cookies.social_ai_session;
+
+    if (token) {
+      await deleteSession(token);
+    }
+
+    reply.clearCookie("social_ai_session", {
+      path: "/",
+    });
+
+    return reply.code(200).send({
+      authenticated: false,
     });
   });
 }
