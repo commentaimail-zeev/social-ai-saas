@@ -1,7 +1,7 @@
  import Fastify from "fastify";
 import { healthRoutes } from "./routes/health.js";
 import { onboardingRoutes } from "./routes/onboarding.js";
-
+import { authRoutes } from "./routes/auth.js";
 export function buildApp() {
   const app = Fastify();
 
@@ -11,6 +11,6 @@ export function buildApp() {
 
   app.register(healthRoutes);
   app.register(onboardingRoutes);
-
+app.register(authRoutes);
   return app;
 }

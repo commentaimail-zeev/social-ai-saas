@@ -190,7 +190,34 @@
 - passwordHash אינו מוחזר בתגובת ה-API
 - נבדקה סיסמה קצרה מדי והוחזר `PASSWORD_TOO_SHORT`
 - נבדקה הרשמה מוצלחת עם סיסמה ונוצר משתמש חדש
+## Authentication - Login Credentials - 2026-10-10
 
+Implemented initial Email + Password authentication.
+
+Completed:
+- Added `src/services/auth.service.ts`
+- Added `POST /auth/login`
+- Email is normalized before lookup
+- Password is verified using existing `verifyPassword()`
+- `passwordHash` is never returned by the API
+- Successful login returns user and business memberships
+- Wrong password returns HTTP 401 with `INVALID_CREDENTIALS`
+- Unknown email also returns HTTP 401 with `INVALID_CREDENTIALS`
+- TypeScript check passes with `npx.cmd tsc --noEmit`
+
+Verified successfully with real PostgreSQL data.
+
+## Next Step
+
+Implement persistent authentication.
+
+Recommended approach:
+- Secure HTTP-only session cookie
+- Server-side session management
+- Login creates a session
+- Browser stays logged in
+- Logout destroys the session
+- Protected routes can identify the logged-in user
 ## Backup & Recovery - 2026-10-09
 
 Backup system established:
