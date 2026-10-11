@@ -403,3 +403,32 @@ Goal:
 - Protected routes should automatically require a valid session
 - Server should know which user is making the request
 - Then begin authorization / business access control so users can only access businesses they belong to
+
+## Protected Routes & Multi-Tenant Authorization - 2026-10-11
+
+Completed:
+
+- Added reusable authentication protection for private routes
+- Added `GET /businesses`
+- Authenticated users only receive businesses they belong to
+- Requests without a valid session return HTTP 401 `UNAUTHENTICATED`
+- Added reusable `requireBusinessMembership()` authorization helper
+- Added `GET /businesses/:businessId`
+- Users cannot access businesses they do not belong to
+- Unauthorized business access returns HTTP 404 `BUSINESS_NOT_FOUND`
+- Verified Multi-Tenant isolation using two separate users and businesses
+- TypeScript check passes with `npx.cmd tsc --noEmit`
+
+## Next Step
+
+Implement role-based business authorization.
+
+Roles currently available:
+- OWNER
+- ADMIN
+- MEMBER
+
+Goal:
+- Some actions will require OWNER
+- Some actions will allow OWNER or ADMIN
+- Read-only/basic actions may allow MEMBER
