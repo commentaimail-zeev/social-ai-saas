@@ -473,3 +473,56 @@ Planned direction:
 - Reply tone/style
 - Automatic vs approval-based replies
 - Prepare the business configuration that will later be used by the AI reply engine
+
+## Business AI Settings - 2026-10-11
+
+Added initial per-business AI configuration.
+
+Completed:
+- Added `BusinessAiSettings`
+- Added `ReplyLanguageMode`
+- Default language mode is `MATCH_CUSTOMER`
+- Replies should normally match the language of the customer comment/review
+- Added fallback language setting for cases where language cannot be reliably detected
+- Default fallback language is Hebrew (`he`)
+- Architecture supports additional languages such as English, Arabic, Russian and others
+- Added reply tone settings
+- Added reply mode settings
+- Default reply mode requires review before automatic publishing
+- Added optional custom business instructions
+- Migration `add_business_ai_settings` applied successfully
+- Prisma Client regenerated
+- TypeScript validation passes
+
+### Business AI Settings API
+
+Completed:
+- Added `GET /businesses/:businessId/ai-settings`
+- Added `PATCH /businesses/:businessId/ai-settings`
+- Missing settings are created automatically with safe defaults
+- OWNER and ADMIN can update AI settings
+- MEMBER can read settings but cannot modify them
+- MEMBER update attempt returns HTTP 403 `INSUFFICIENT_PERMISSIONS`
+- Hebrew custom instructions persist correctly in PostgreSQL
+- Reply language architecture supports Hebrew, English, Arabic, Russian and additional languages
+- Default behavior is to match the customer's language
+- AI settings API tested successfully end-to-end
+
+## Next Step
+
+Build the first AI reply generation engine.
+
+Goal:
+- Receive a customer comment/review
+- Load that business's AI settings
+- Determine reply language
+- Apply tone and custom instructions
+- Generate a suggested reply
+- Initially return the suggestion for review rather than publishing automatically
+
+## Product Backlog / Ideas
+
+- Handle mixed-language comments intelligently
+- Add additional reply tones if useful
+- Refine AI settings UX during frontend development
+- Consider additional business-specific AI preferences later

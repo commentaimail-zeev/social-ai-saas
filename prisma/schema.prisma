@@ -13,22 +13,41 @@ enum MembershipRole {
   MEMBER
 }
 
+enum ReplyLanguageMode {
+  MATCH_CUSTOMER
+  FIXED
+}
+
+enum ReplyTone {
+  BALANCED
+  FRIENDLY
+  PROFESSIONAL
+}
+
+enum ReplyMode {
+  REVIEW_REQUIRED
+  AUTOMATIC
+}
+
 model User {
-  id           String       @id @default(cuid())
-  email        String       @unique
+  id           String  @id @default(cuid())
+  email        String  @unique
   name         String?
   passwordHash String?
-  memberships  Membership[]
-  sessions     Session[]
+
+  memberships Membership[]
+  sessions    Session[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Business {
-  id          String       @id @default(cuid())
-  name        String
+  id   String @id @default(cuid())
+  name String
+
   memberships Membership[]
+  aiSettings  BusinessAiSettings?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -62,4 +81,20 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model BusinessAiSettings {
+  id         String @id @default(cuid())
+  businessId String @unique
+
+  replyLanguageMode    ReplyLanguageMode @default(MATCH_CUSTOMER)
+  defaultReplyLanguage String            @default("he")
+  replyTone            ReplyTone         @default(BALANCED)
+  replyMode            ReplyMode         @default(REVIEW_REQUIRED)
+  customInstructions   String?
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
