@@ -2,6 +2,8 @@
 
 import { getUserFromSessionToken } from "../services/session.service.js";
 
+type BusinessRole = "OWNER" | "ADMIN" | "MEMBER";
+
 export async function requireAuthenticatedUser(
   request: FastifyRequest,
   reply: FastifyReply
@@ -61,4 +63,31 @@ export async function requireBusinessMembership(
     membership,
     business: membership.business,
   };
+}
+
+export async function requireBusinessRole(
+  request: FastifyRequest,
+  reply: FastifyReply,
+  businessId: string,
+  allowedRoles: readonly BusinessRole[]
+) {
+  const access = await requireBusinessMembership(
+    request,
+    reply,
+    businessId
+  );
+
+  if (!access) {
+    return null;
+  }
+
+  if (!allowedRoles.includes(access.membership.role as BusinessRole)) {
+    reply.code(403).send({
+      code: "INSUFFICIENT_PERMISSIONS",
+    });
+
+    return null;
+  }
+
+  return access;
 }

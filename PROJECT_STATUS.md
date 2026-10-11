@@ -432,3 +432,44 @@ Goal:
 - Some actions will require OWNER
 - Some actions will allow OWNER or ADMIN
 - Read-only/basic actions may allow MEMBER
+
+## Role-Based Authorization - 2026-10-11
+
+Role-based business authorization is working end-to-end.
+
+Completed:
+
+- Added reusable `requireBusinessRole()` authorization helper
+- Business roles supported:
+  - OWNER
+  - ADMIN
+  - MEMBER
+- OWNER can perform business management actions
+- ADMIN can perform allowed management actions
+- MEMBER can access the business but cannot perform management actions
+- Insufficient role returns HTTP 403 with `INSUFFICIENT_PERMISSIONS`
+- Users outside the business continue to receive HTTP 404 `BUSINESS_NOT_FOUND`
+- Added protected business update route
+- Verified role behavior against real PostgreSQL data
+- Restored test memberships and business names after testing
+- TypeScript validation passes successfully
+
+## Current Security / Access Flow
+
+Request
+→ Session authentication
+→ User identification
+→ Business membership check
+→ Role authorization
+→ Requested business action
+
+## Next Development Step
+
+Begin business-level product configuration.
+
+Planned direction:
+- Business AI settings
+- Preferred reply language
+- Reply tone/style
+- Automatic vs approval-based replies
+- Prepare the business configuration that will later be used by the AI reply engine
