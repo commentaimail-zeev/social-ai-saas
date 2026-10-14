@@ -526,3 +526,31 @@ Goal:
 - Add additional reply tones if useful
 - Refine AI settings UX during frontend development
 - Consider additional business-specific AI preferences later
+- Allow businesses to control automatic reply timing:
+  immediate or delayed by a configurable number of minutes
+
+  ## Initial AI Reply Engine - 2026-10-14
+
+The first AI reply generation flow is working end-to-end.
+
+Completed:
+- Added official OpenAI Node.js SDK
+- Added configurable OpenAI model through environment variables
+- Added `src/lib/openai.ts`
+- Added `src/services/ai-reply.service.ts`
+- Added protected AI reply generation endpoint
+- AI engine loads per-business AI settings
+- Supports `MATCH_CUSTOMER` language behavior
+- Supports fallback language
+- Applies configured reply tone
+- Applies custom business instructions
+- Customer content is treated as untrusted input
+- AI is instructed not to follow prompt-injection attempts from customer text
+- AI is instructed not to invent facts, promises, discounts or policies
+- Generated replies are returned as suggestions only
+- No automatic publishing is performed yet
+- English positive review tested successfully
+- Hebrew positive review tested successfully
+- Hebrew negative review tested successfully
+- Negative feedback receives an appropriate empathetic response
+- `REVIEW_REQUIRED` remains the current safe default
