@@ -8,6 +8,7 @@ import { businessRoutes } from "./routes/businesses.js";
 import { businessAiSettingsRoutes } from "./routes/business-ai-settings.js";
 import { aiReplyRoutes } from "./routes/ai-replies.js";
 import { interactionRoutes } from "./routes/interactions.js";
+import { platformConnectionRoutes } from "./routes/platform-connections.js";
 
 export function buildApp() {
   const app = Fastify();
@@ -25,6 +26,7 @@ export function buildApp() {
   app.register(businessAiSettingsRoutes);
   app.register(aiReplyRoutes);
   app.register(interactionRoutes);
+  app.register(platformConnectionRoutes);
 
   return app;
 }

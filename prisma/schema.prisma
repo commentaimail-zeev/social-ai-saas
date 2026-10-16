@@ -35,6 +35,14 @@ enum SocialPlatform {
   GOOGLE
 }
 
+enum PlatformConnectionStatus {
+  PENDING
+  CONNECTED
+  REAUTH_REQUIRED
+  DISCONNECTED
+  ERROR
+}
+
 enum InteractionType {
   COMMENT
   REVIEW
@@ -65,9 +73,10 @@ model Business {
   id   String @id @default(cuid())
   name String
 
-  memberships  Membership[]
-  aiSettings   BusinessAiSettings?
-  interactions CustomerInteraction[]
+  memberships         Membership[]
+  aiSettings          BusinessAiSettings?
+  interactions        CustomerInteraction[]
+  platformConnections PlatformConnection[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,4 +156,27 @@ model CustomerInteraction {
   @@unique([businessId, platform, externalId])
   @@index([businessId, receivedAt])
   @@index([replyStatus])
+}
+
+model PlatformConnection {
+  id         String                   @id @default(cuid())
+  businessId String
+  platform   SocialPlatform
+  status     PlatformConnectionStatus @default(PENDING)
+
+  externalAccountId   String
+  externalAccountName String?
+
+  connectedAt    DateTime?
+  disconnectedAt DateTime?
+  lastSyncAt     DateTime?
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, platform, externalAccountId])
+  @@index([businessId])
+  @@index([platform, status])
 }
