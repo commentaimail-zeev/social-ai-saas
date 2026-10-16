@@ -7,6 +7,7 @@ import { authRoutes } from "./routes/auth.js";
 import { businessRoutes } from "./routes/businesses.js";
 import { businessAiSettingsRoutes } from "./routes/business-ai-settings.js";
 import { aiReplyRoutes } from "./routes/ai-replies.js";
+import { interactionRoutes } from "./routes/interactions.js";
 
 export function buildApp() {
   const app = Fastify();
@@ -23,6 +24,7 @@ export function buildApp() {
   app.register(businessRoutes);
   app.register(businessAiSettingsRoutes);
   app.register(aiReplyRoutes);
+  app.register(interactionRoutes);
 
   return app;
 }

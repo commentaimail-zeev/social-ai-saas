@@ -528,6 +528,17 @@ Goal:
 - Consider additional business-specific AI preferences later
 - Allow businesses to control automatic reply timing:
   immediate or delayed by a configurable number of minutes
+  - Adapt Hebrew grammatical gender when reliable signals exist
+- Prefer explicit linguistic clues from the customer's text
+- Use customer first name only as a secondary signal
+- Fall back to natural gender-neutral Hebrew when uncertain
+### Review intelligence
+- Detect mismatches between review text sentiment and star rating
+- Treat review text as the primary signal and star rating as a secondary signal
+- If text and rating strongly conflict, flag the review for manual review
+- Consider forcing `REVIEW_REQUIRED` when there is a strong rating/text mismatch
+- Surface a warning to the business when the customer may have selected the wrong star rating
+
 
   ## Initial AI Reply Engine - 2026-10-14
 
@@ -554,3 +565,26 @@ Completed:
 - Hebrew negative review tested successfully
 - Negative feedback receives an appropriate empathetic response
 - `REVIEW_REQUIRED` remains the current safe default
+
+
+## Stored Customer Interactions + AI Reply Flow - 2026-10-16
+
+Completed:
+- Added `CustomerInteraction` database model
+- Added support for Facebook, Instagram and Google interactions
+- Added COMMENT and REVIEW interaction types
+- Added optional customer name and external customer ID
+- Added optional 1-5 star rating
+- Added reply lifecycle statuses
+- Added protection against duplicate platform interactions
+- Added endpoint for storing incoming interactions
+- Added endpoint for listing stored interactions
+- Connected stored interactions to the AI Reply Engine
+- AI now receives customer text, customer name and star rating
+- Written review text is treated as the primary sentiment signal
+- Star rating is treated as secondary context
+- Added cautious Hebrew grammatical-gender personalization
+- Generated AI suggestions are persisted in PostgreSQL
+- AI model used for the suggestion is persisted
+- `REVIEW_REQUIRED` businesses move generated replies to `PENDING_REVIEW`
+- End-to-end Google review test completed successfully

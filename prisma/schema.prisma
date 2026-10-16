@@ -29,6 +29,25 @@ enum ReplyMode {
   AUTOMATIC
 }
 
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  GOOGLE
+}
+
+enum InteractionType {
+  COMMENT
+  REVIEW
+}
+
+enum ReplyStatus {
+  PENDING_GENERATION
+  PENDING_REVIEW
+  READY_TO_PUBLISH
+  PUBLISHED
+  FAILED
+}
+
 model User {
   id           String  @id @default(cuid())
   email        String  @unique
@@ -46,8 +65,9 @@ model Business {
   id   String @id @default(cuid())
   name String
 
-  memberships Membership[]
-  aiSettings  BusinessAiSettings?
+  memberships  Membership[]
+  aiSettings   BusinessAiSettings?
+  interactions CustomerInteraction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,4 +117,34 @@ model BusinessAiSettings {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CustomerInteraction {
+  id         String          @id @default(cuid())
+  businessId String
+  platform   SocialPlatform
+  type       InteractionType
+  externalId String
+
+  customerName       String?
+  customerExternalId String?
+  text               String
+  rating             Int?
+
+  suggestedReply String?
+  finalReply     String?
+  aiModel        String?
+  replyStatus    ReplyStatus @default(PENDING_GENERATION)
+
+  receivedAt  DateTime  @default(now())
+  publishedAt DateTime?
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, platform, externalId])
+  @@index([businessId, receivedAt])
+  @@index([replyStatus])
 }
