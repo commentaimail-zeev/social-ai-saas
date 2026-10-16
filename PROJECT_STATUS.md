@@ -302,6 +302,12 @@ PENDING_GENERATION → READY_TO_PUBLISH
 - READY_TO_PUBLISH interactions can move to PUBLISHED
 - publishedAt is stored after successful publish
 - Publishing is still simulated; no external platform API is called yet
+- Hardened reply lifecycle transitions
+- AI generation is allowed only from `PENDING_GENERATION`
+- Publishing is allowed only from `READY_TO_PUBLISH`
+- Duplicate publish attempts are blocked with HTTP 409
+- Regenerating AI replies after lifecycle progression is blocked with HTTP 409
+
 11. Working Method
 הפרויקט מתקדם ב-mini-sprints קטנים והגיוניים.
 בכל mini-sprint:

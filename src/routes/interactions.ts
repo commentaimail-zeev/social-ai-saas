@@ -187,6 +187,11 @@ export async function interactionRoutes(app: FastifyInstance) {
           code: "INTERACTION_NOT_FOUND",
         });
       }
+      if (interaction.replyStatus !== "PENDING_GENERATION") {
+  return reply.code(409).send({
+    code: "INTERACTION_NOT_PENDING_GENERATION",
+  });
+}
 
       try {
         const result = await generateAiReply({
