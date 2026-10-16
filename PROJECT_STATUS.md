@@ -1,590 +1,311 @@
-# Social AI SaaS – Project Status
-
-## מטרת הפרויקט
-
-מערכת SaaS לעסקים בישראל שמייצרת תגובות אוטומטיות מבוססות AI
-לתגובות וביקורות ברשתות חברתיות וב-Google Business.
-
-הפלטפורמות המתוכננות:
-
+ Social AI SaaS – Project Status
+1. מטרת הפרויקט
+מערכת SaaS לעסקים בישראל שמייצרת ומנהלת תגובות מבוססות AI לתגובות וביקורות ב:
 - Facebook
 - Instagram
 - Google Business / Google Reviews
-
-## טכנולוגיות
-
-- Backend: Node.js
-- שפה: TypeScript
-- Backend Framework: Fastify
-- Database: PostgreSQL
-- ORM: Prisma
-- AI מתוכנן: OpenAI API
-- סביבת פיתוח: VS Code
-- Containerization לפיתוח מקומי: Docker Desktop
-- WSL מותקן ופועל ב-Windows
-
-## מה כבר בוצע
-
-### בסיס הפרויקט
-
-- נוצר הפרויקט `social-ai-saas`
-- הותקנו חבילות Node.js
-- קיימת תיקיית `node_modules`
-- קיים `package.json`
-- קיים `package-lock.json`
-- קיים `tsconfig.json`
-- נוצרה תיקיית `src`
-- נוצר הקובץ `src/server.ts`
-
-### TypeScript / Node.js
-
-- הוגדר script בשם `dev` ב-`package.json`:
-  `tsx watch src/server.ts`
-- TypeScript מוגדר להשתמש ב-Node types באמצעות:
-  `"types": ["node"]`
-- הפרויקט מוגדר כ-ES Modules באמצעות:
-  `"type": "module"`
-- VS Code מציג `Problems: 0`
-
-### Fastify
-
-- הותקן Fastify
-- השרת הוסב מ-Node HTTP ידני ל-Fastify
-- נוצר הקובץ `src/app.ts`
-- `src/app.ts` אחראי על בניית אפליקציית Fastify
-- `src/server.ts` אחראי על הפעלת השרת
-- `server.ts` מייבא את `buildApp()` מתוך `app.ts`
-
-### Routes
-
-- נוצר route עבור `GET /`
-- `GET /` מחזיר:
-  `השרת עובד`
-- נוצרה התיקייה `src/routes`
-- נוצר הקובץ `src/routes/health.ts`
-- ה-route של `GET /health` הועבר לקובץ ייעודי
-- `app.ts` טוען את `healthRoutes`
-- `GET /health` מחזיר:
-  `{"status":"ok"}`
-- `GET /` ו-`GET /health` נבדקו בפועל ועובדים בהצלחה
-
-### משתני סביבה
-
-- נוצר קובץ `.gitignore`
-- הוגדר ש-`node_modules/` ו-`.env` לא ייכללו ב-Git
-- נוצר קובץ `.env`
-- הוגדר `PORT=3000`
-- `server.ts` טוען את `.env` באמצעות `loadEnvFile()` של Node.js
-- השרת קורא את הפורט מתוך `process.env.PORT`
-- נבדק בפועל שינוי זמני ל-Port 3001
-- השרת עלה בהצלחה על Port 3001
-- לאחר הבדיקה ה-Port הוחזר ל-3000
-
-### Prisma
-
-- הותקן Prisma CLI
-- Prisma הותקן תחילה בגרסת RC ולאחר מכן הוחלף לגרסה יציבה
-- Prisma CLI נעול לגרסה:
-  `7.10.0`
-- `@prisma/client` נעול לגרסה:
-  `7.10.0`
-- הותקן `dotenv`
-- אותחל Prisma עבור PostgreSQL
-- נוצר:
-  `prisma/schema.prisma`
-- נוצר:
-  `prisma7.config.ts`
-- `prisma7.config.ts` טוען `.env`
-- `prisma7.config.ts` משתמש ב:
-  `env("DATABASE_URL")`
-- `prisma/schema.prisma` מוגדר לעבוד עם PostgreSQL
-- Prisma Client מוגדר להיווצר תחת:
-  `generated/prisma`
-
-### Docker / WSL
-
-- הותקן WSL
-- WSL פועל בהצלחה
-- הותקן Docker Desktop
-- Docker Engine פועל
-- `docker version` מחזיר Client ו-Server תקינים
-- נוצר הקובץ:
-  `compose.yaml`
-
-### PostgreSQL
-
-- PostgreSQL רץ מקומית בתוך Docker
-- Docker image:
-  `postgres:18.6`
-- שם ה-container:
-  `social-ai-postgres`
-- PostgreSQL זמין על Port:
-  `5432`
-- ה-container נמצא במצב:
-  `healthy`
-- `.env` מכיל הגדרות PostgreSQL מקומיות
-- `DATABASE_URL` מוגדר עבור Prisma
-- Prisma התחבר בהצלחה ל-PostgreSQL
-- בוצעה בדיקת חיבור באמצעות:
-  `SELECT 1;`
-- הבדיקה הסתיימה בהצלחה
-- הוגדרו מודלי Prisma ראשונים:
-  - User
-  - Business
-  - Membership
-- הוגדר enum בשם MembershipRole עם OWNER / ADMIN / MEMBER
-- הוגדר קשר many-to-many בין Users ל-Businesses באמצעות Membership
-- בוצע `prisma format`
-- בוצע `prisma validate`
-- ה-schema עבר validation בהצלחה
-
-- בוצע migration ראשון בשם `init_core_models`
-- נוצרה תיקיית migration:
-  `prisma/migrations/20261009121941_init_core_models`
-- ה-migration הוחל בהצלחה על PostgreSQL
-- מסד הנתונים מסונכרן עם `prisma/schema.prisma`
-- נוצרו בפועל טבלאות:
-  - User
-  - Business
-  - Membership
-
-  - נוצר Prisma Client בהצלחה באמצעות `prisma generate`
-- Prisma Client נוצר תחת `generated/prisma`
-
-- הותקנו `@prisma/adapter-pg` ו-`pg`
-- נוצר `src/lib/prisma.ts`
-- נוצר Prisma Client מרכזי עבור ה-Backend
-- ה-Backend מחובר ל-PostgreSQL דרך Prisma
-- נוצר endpoint זמני לבדיקת Database:
-  `GET /health/db`
-- בוצעה שאילתת Prisma אמיתית מתוך Fastify באמצעות `prisma.user.count()`
-- החיבור נבדק בהצלחה והחזיר `userCount: 0`
-
-- נבנה תהליך onboarding ראשון
-- נוצר `src/services/onboarding.service.ts`
-- נוצר `src/routes/onboarding.ts`
-- `POST /onboarding` רשום ב-Fastify
-- onboarding יוצר User + Business + Membership בתוך Prisma transaction
-- המשתמש הראשון נוצר בהצלחה
-- העסק הראשון נוצר בהצלחה
-- Membership ראשון נוצר בהצלחה עם role של OWNER
-- `/health/db` הורחב לבדיקת User / Business / Membership
-- נבדק בפועל:
-  - userCount: 1
-  - businessCount: 1
-  - membershipCount: 1
-- חוזק תהליך ה-onboarding עם validation בסיסי
-- אימייל לא תקין נדחה עם HTTP 400
-- businessName ריק או שמכיל רק רווחים נדחה עם HTTP 400
-- אימייל שכבר קיים נדחה עם HTTP 409
-- נבדקו בפועל כל שלושת תרחישי השגיאה בהצלחה
-- onboarding תקין ממשיך ליצור User + Business + OWNER Membership בתוך transaction
-
-- נוסף השדה `passwordHash` למודל User
-- בוצע migration בשם `add_password_hash`
-- Prisma Client נוצר מחדש לאחר שינוי ה-schema
-- נוצר `src/lib/password.ts`
-- הסיסמאות עוברות hashing באמצעות scrypt של Node.js
-- הוגדרה דרישת מינימום של 8 תווים לסיסמה
-- אין דרישה לאות גדולה, מספר או תו מיוחד
-- passwordHash אינו מוחזר בתגובת ה-API
-- נבדקה סיסמה קצרה מדי והוחזר `PASSWORD_TOO_SHORT`
-- נבדקה הרשמה מוצלחת עם סיסמה ונוצר משתמש חדש
-## Authentication - Login Credentials - 2026-10-10
-
-Implemented initial Email + Password authentication.
-
-Completed:
-- Added `src/services/auth.service.ts`
-- Added `POST /auth/login`
-- Email is normalized before lookup
-- Password is verified using existing `verifyPassword()`
-- `passwordHash` is never returned by the API
-- Successful login returns user and business memberships
-- Wrong password returns HTTP 401 with `INVALID_CREDENTIALS`
-- Unknown email also returns HTTP 401 with `INVALID_CREDENTIALS`
-- TypeScript check passes with `npx.cmd tsc --noEmit`
-
-Verified successfully with real PostgreSQL data.
-
-## Next Step
-
-Implement persistent authentication.
-
-Recommended approach:
-- Secure HTTP-only session cookie
-- Server-side session management
-- Login creates a session
-- Browser stays logged in
-- Logout destroys the session
-- Protected routes can identify the logged-in user
-## Backup & Recovery - 2026-10-09
-
-Backup system established:
-
-- Source code backed up to private GitHub repository.
-- Local PostgreSQL dump created successfully.
-- PostgreSQL dump copied to Google Drive.
-- `.env` backed up inside an AES-encrypted 7-Zip archive.
-- Encrypted `.env` archive copied to Google Drive.
-- `backups/` added to `.gitignore`.
-- Git main branch is synchronized with GitHub.
-- Disaster recovery procedure documented/planned.
-
-## Current Development Status
-
-Onboarding with Email + Password is complete enough to move forward.
-
-Completed:
-- PostgreSQL + Prisma
-- Core User / Business / Membership models
-- Multi-tenant membership structure
-- Business onboarding
-- Input validation
-- Stable API error codes
-- Password hashing with scrypt
-- Duplicate email protection
-- Database connectivity checks
-- Initial backup and recovery system
-
-## Next Step
-
-Build Authentication / Login with Email + Password.
-
-Planned flow:
-1. Find user by normalized email.
-2. Verify that the user has a passwordHash.
-3. Verify supplied password using verifyPassword().
-4. Return a safe authentication result.
-5. Then choose and implement the persistent authentication method
-   (session/cookie or token).
-## מצב נוכחי
-
-ה-Backend הבסיסי עובד ונבדק בהצלחה.
-
-המבנה הנוכחי כולל:
-
-- Fastify
+עקרונות מוצר מרכזיים:
+- Automation-first / self-service-first
+- תמיכה מלאה בעברית ובשפות נוספות
+- ברירת מחדל בטוחה: REVIEW_REQUIRED
+- הפרדה מלאה בין עסקים שונים (Multi-Tenant)
+- הרחבה עתידית לפרסום אוטומטי, תזמון, Webhooks, Jobs/Queues, Billing ו-Frontend
+2. מצב הפרויקט כיום
+ה-Backend עובד מקומית ונבדק End-to-End.
+Stack
+- Node.js
 - TypeScript
-- Routes מודולריים
-- `.env`
-- Prisma
+- Fastify
 - PostgreSQL
-- Docker
-
-השרת פועל על:
-
-`http://localhost:3000`
-
-קיים Health Check:
-
-`http://localhost:3000/health`
-
-PostgreSQL פועל מקומית בתוך Docker ומחובר ל-Prisma.
-
-עדיין לא נוצרו טבלאות במסד הנתונים.
-
-עדיין לא בוצע migration ראשון.
-
-עדיין לא הוגדרו models עסקיים ב-Prisma.
-
-## סביבת הפיתוח
-
-PowerShell חוסם את `npm.ps1` בגלל Execution Policy.
-
-לכן בשלב הנוכחי משתמשים בפקודות npm בצורה:
-
-`npm.cmd`
-
-לדוגמה:
-
-`npm.cmd run dev`
-
-ו:
-
-`npm.cmd install ...`
-
-לא שונתה מדיניות האבטחה של Windows.
-
-## רכיבים שעדיין לא נבנו
-
-- Models עסקיים ב-Database
-- Users
-- Businesses
-- Memberships
-- Authentication
-- Multi-Tenant logic
-- OpenAI integration
+- Prisma 7.10.0
+- Docker Desktop
+- OpenAI Node.js SDK
+- VS Code
+סביבת פיתוח
+- PostgreSQL רץ ב-Docker container בשם social-ai-postgres
+- PostgreSQL image: postgres:18.6
+- Database port: 5432
+- השרת המקומי רץ כברירת מחדל על http://localhost:3000
+- GET /health פעיל
+- Prisma Client נוצר תחת generated/prisma
+- PowerShell חוסם npm.ps1, לכן משתמשים ב-npm.cmd וב-npx.cmd
+- אין לשדרג כרגע ל-Prisma 8 RC
+3. מה עובד כיום
+Core Database / Multi-Tenant
+קיימים ופועלים:
+- User
+- Business
+- Membership
+- Session
+- BusinessAiSettings
+- CustomerInteraction
+Roles:
+- OWNER
+- ADMIN
+- MEMBER
+קיימת הפרדת Multi-Tenant:
+- משתמש רואה רק עסקים שהוא שייך אליהם
+- משתמש שאינו שייך לעסק מקבל BUSINESS_NOT_FOUND
+- פעולות לפי Role מוגנות עם INSUFFICIENT_PERMISSIONS
+Onboarding
+POST /onboarding עובד ויוצר ב-transaction:
+- User
+- Business
+- OWNER Membership
+קיימים:
+- Email normalization
+- Email validation
+- Duplicate email protection
+- Password validation
+- Stable machine-readable error codes
+Authentication
+Email + Password authentication עובד End-to-End.
+קיימים:
+- Password hashing באמצעות scrypt
+- מינימום 8 תווים לסיסמה
+- POST /auth/login
+- GET /auth/me
+- POST /auth/logout
+- Server-side sessions ב-PostgreSQL
+- HttpOnly cookie בשם social_ai_session
+- Session expiry של 7 ימים
+- SameSite=Lax
+- Secure ב-production
+- רק SHA-256 hash של session token נשמר ב-DB
+- passwordHash ו-session hashes אינם מוחזרים מה-API
+Business Routes / Authorization
+קיימים:
+- GET /businesses
+- GET /businesses/:businessId
+- PATCH /businesses/:businessId
+- reusable authentication protection
+- requireBusinessMembership()
+- requireBusinessRole()
+OWNER ו-ADMIN יכולים לבצע פעולות ניהול מורשות.
+MEMBER יכול לקרוא מידע בסיסי אך לא לבצע פעולות ניהול.
+Business AI Settings
+קיים BusinessAiSettings לכל עסק.
+הגדרות קיימות:
+- replyLanguageMode
+  - MATCH_CUSTOMER
+  - FIXED
+- defaultReplyLanguage
+- replyTone
+  - BALANCED
+  - FRIENDLY
+  - PROFESSIONAL
+- replyMode
+  - REVIEW_REQUIRED
+  - AUTOMATIC
+- customInstructions
+API קיים:
+- GET /businesses/:businessId/ai-settings
+- PATCH /businesses/:businessId/ai-settings
+ברירת מחדל:
+- MATCH_CUSTOMER
+- fallback language: he
+- BALANCED
+- REVIEW_REQUIRED
+OWNER / ADMIN יכולים לעדכן.
+MEMBER יכול לקרוא אך לא לעדכן.
+AI Reply Engine
+OpenAI integration עובד End-to-End.
+קיימים:
+- src/lib/openai.ts
+- src/services/ai-reply.service.ts
+- OpenAI model configurable דרך environment variable
+- טעינת AI settings לפי העסק
+- התאמת שפת התגובה לשפת הלקוח
+- fallback language
+- Tone
+- Custom business instructions
+- הגנה בסיסית מפני prompt injection מתוך תוכן הלקוח
+- איסור על המצאת עובדות, הבטחות, הנחות, refunds או policies שלא נמסרו
+נבדקו בהצלחה:
+- English positive review
+- Hebrew positive review
+- Hebrew negative review
+Hebrew Personalization
+ה-AI מקבל גם:
+- customer text
+- customer name
+- star rating כאשר קיים
+כללי התאמת מין דקדוקי בעברית:
+- להשתמש במין דקדוקי רק כשיש סימן אמין
+- להעדיף רמז מפורש מתוך הטקסט
+- להשתמש בשם פרטי רק כרמז משני
+- כאשר אין ודאות, להשתמש בניסוח ניטרלי טבעי
+Customer Interactions
+קיים CustomerInteraction לשמירת תגובות וביקורות.
+Supported platforms:
+- FACEBOOK
+- INSTAGRAM
+- GOOGLE
+Interaction types:
+- COMMENT
+- REVIEW
+נשמרים בין היתר:
+- business
+- platform
+- type
+- external ID
+- customer name
+- customer external ID
+- text
+- optional 1–5 star rating
+- AI suggested reply
+- final reply
+- AI model
+- reply status
+- received/published timestamps
+קיימת הגנה מפני duplicate interaction לפי:
+businessId + platform + externalId
+API קיים:
+- יצירת Interaction
+- הצגת Interactions של עסק
+- יצירת AI reply ל-Interaction שמורה
+Reply Lifecycle
+Statuses קיימים:
+- PENDING_GENERATION
+- PENDING_REVIEW
+- READY_TO_PUBLISH
+- PUBLISHED
+- FAILED
+Flow שכבר נבדק:
+Google Review
+→ נשמרת ב-PostgreSQL
+→ AI מקבל text + customer name + rating + business settings
+→ suggestedReply נשמר
+→ aiModel נשמר
+→ עסק במצב REVIEW_REQUIRED עובר ל-PENDING_REVIEW
+נבדק End-to-End עם Google review מדומה בהצלחה.
+4. Current Sprint
+Review / Approval Workflow
+המטרה הבאה:
+לאפשר לבעל העסק לעבוד בפועל עם Interaction במצב PENDING_REVIEW.
+ה-flow המתוכנן:
+1. בעל העסק רואה את תגובת ה-AI.
+2. הוא יכול לאשר אותה כפי שהיא.
+3. הוא יכול לערוך אותה לפני אישור.
+4. הגרסה שאושרה נשמרת ב-finalReply.
+5. הרשומה עוברת לסטטוס המתאים לקראת פרסום.
+6. בהמשך יתווסף publishing אמיתי לפלטפורמה.
+5. Next Up
+לאחר Review / Approval Workflow:
+- לחזק את lifecycle של replies ואת transitions בין statuses
+- לבנות publishing abstraction לפני חיבור לפלטפורמות אמיתיות
 - Facebook integration
 - Instagram integration
-- Google Business integration
-- OAuth
-- Webhooks
-- Jobs / Queues
-- Logs מתקדמים
-- Error Handling מלא
+- Google Business / Google Reviews integration
+- OAuth / account connection flows
+- Webhooks לקבלת comments/reviews אמיתיים
+- Jobs / Queues לעבודה אסינכרונית, retries ותזמון
+- Logs ו-error handling מתקדמים
 - Frontend
 - Payments / Subscriptions
 - Deployment
+6. Product Backlog / Ideas
+Language & AI
+- Handle mixed-language comments intelligently
+- Add additional reply tones if useful
+- Refine AI settings UX during frontend development
+- Consider additional business-specific AI preferences later
+Reply Timing / Automation
+- Allow businesses to control automatic reply timing
+- Support immediate replies
+- Support configurable delay in minutes
+- Consider a future “smart / natural” reply timing mode
+Hebrew Reply Personalization
+- Adapt Hebrew grammatical gender when reliable signals exist
+- Prefer explicit linguistic clues from the customer's text
+- Use customer first name only as a secondary signal
+- Fall back to natural gender-neutral Hebrew when uncertain
+Review Intelligence
+- Detect mismatches between review text sentiment and star rating
+- Treat review text as the primary signal and star rating as a secondary signal
+- If text and rating strongly conflict, flag the review for manual review
+- Consider forcing REVIEW_REQUIRED when there is a strong rating/text mismatch
+- Surface a warning to the business when the customer may have selected the wrong star rating
+7. Technical / Safety Decisions
+- Prisma CLI ו-@prisma/client נשארים כרגע על 7.10.0
+- לא משדרגים ל-Prisma 8 RC בלי החלטה יזומה
+- משתמשים ב-npm.cmd / npx.cmd ב-PowerShell
+- לא משנים Windows Execution Policy לצורך הפרויקט
+- .env לעולם לא נכנס ל-Git
+- secrets לא נכנסים ל-.env.example
+- API errors צריכים להשתמש ב-stable machine-readable codes
+- Password minimum: 8 characters
+- אין דרישה לאות גדולה / מספר / special character
+- Multi-Tenant isolation הוא דרישת בסיס
+- גישה לעסק זר מחזירה 404 BUSINESS_NOT_FOUND ולא חושפת קיום של העסק
+- REVIEW_REQUIRED נשאר ברירת המחדל הבטוחה
+- customer content נחשב untrusted input
+- ה-AI לא אמור להמציא עובדות, הבטחות, refunds, discounts או policies
+- automatic publishing יתאפשר רק כאשר העסק בוחר בו במפורש
+- Product architecture צריכה להישאר automation-first ו-self-service-first
+8. Backup & Recovery
+קיים מנגנון גיבוי בסיסי:
+- Source code מגובה ב-private GitHub repository
+- PostgreSQL dumps נשמרים מחוץ למחשב לפי checkpoints
+- .env מגובה בתוך AES-encrypted 7-Zip archive
+- encrypted .env נשמר מחוץ למחשב
+- backups/ נמצא ב-.gitignore
+- PROJECT_CONTEXT.md נמצא בפרויקט וב-Git ומשמש handoff document
+- יש לשמור על יכולת recovery מלאה במקרה של אובדן מחשב / VS Code / ChatGPT context
+9. משמעות הסטטוסים החשובים
+REVIEW_REQUIRED
+העסק רוצה לראות ולאשר את התשובה לפני פרסום.
+AI generation:
+PENDING_GENERATION → PENDING_REVIEW
+AUTOMATIC
+העסק מאפשר למערכת להכין תשובה לפרסום אוטומטי.
+AI generation:
+PENDING_GENERATION → READY_TO_PUBLISH
+פרסום אמיתי לפלטפורמות עדיין לא קיים.
+10. Recent Completed Milestones
+2026-10-09
+- PostgreSQL + Prisma setup
+- Core User / Business / Membership models
+- Initial onboarding
+- Backup foundation
+2026-10-10
+- Password hashing
+- Email + Password login
+- Persistent server-side sessions
+- /auth/me
+- Logout
+2026-10-11
+- Protected routes
+- Multi-Tenant authorization
+- Role-Based Authorization
+- Business AI Settings
+2026-10-14
+- Initial OpenAI Reply Engine
+- English/Hebrew reply generation tests
+- Safe REVIEW_REQUIRED default
+2026-10-16
+- CustomerInteraction
+- Facebook / Instagram / Google interaction structure
+- Rating support
+- Stored AI suggestions
+- Hebrew grammatical-gender guidance
+- End-to-End stored Google review → AI suggestion → PENDING_REVIEW
 
-## הצעד הבא
-
-לתכנן את מודל הנתונים הראשון של ה-SaaS לפני יצירת migration ראשון.
-
-הכיוון המתוכנן:
-
-- `User`
-- `Business`
-- `Membership`
-
-המטרה של `Membership` היא לאפשר מבנה Multi-Tenant נכון:
-
-- משתמש אחד יוכל להיות קשור ליותר מעסק אחד
-- עסק אחד יוכל לכלול יותר ממשתמש אחד
-- בעתיד ניתן יהיה להוסיף roles והרשאות
-
-לפני יצירת migration ראשון:
-
-1. נגדיר את שלושת ה-models
-2. נבצע Prisma validation
-3. נבדוק שה-schema תקין
-4. רק לאחר מכן נחליט על migration ראשון
-
-## כלל עבודה
-
+- Review / Approval Workflow completed
+- OWNER / ADMIN can approve AI replies
+- AI suggestions can be accepted as-is or edited before approval
+- Approved reply is stored in `finalReply`
+- Approved interactions move to `READY_TO_PUBLISH`
+11. Working Method
 הפרויקט מתקדם ב-mini-sprints קטנים והגיוניים.
-
 בכל mini-sprint:
-
 1. מסבירים מה עומדים לעשות ולמה.
 2. נותנים מספר קטן של פעולות קשורות.
 3. מבצעים checkpoint בנקודה ברורה.
 4. בודקים שהתוצאה עובדת בפועל.
 5. לא ממשיכים אם קיימת שגיאה.
-6. עוצרים לפני שינויים ארכיטקטוניים או פעולות מסוכנות.
-7. מעדכנים את `PROJECT_STATUS.md` בסיום שלב משמעותי.
-
-המטרה היא לעבוד בצורה יותר אוטונומית, יעילה ומהירה,
-אבל בלי לזרוק מספר גדול של משימות לביצוע בבת אחת ובלי לאבד שליטה על הארכיטקטורה.
-
-## Authentication Complete - 2026-10-10
-
-Basic Email + Password authentication is now working end-to-end.
-
-Completed:
-
-- Added Session model to Prisma
-- Added migration: `add_sessions`
-- Sessions are stored in PostgreSQL
-- Session tokens are generated securely
-- Only SHA-256 token hashes are stored in the database
-- Login creates a server-side session
-- Login sends an HttpOnly cookie named `social_ai_session`
-- Session cookie expires after 7 days
-- Cookie uses SameSite=Lax
-- Cookie will use Secure automatically in production
-- Added `GET /auth/me`
-- `/auth/me` identifies the currently logged-in user
-- Added `POST /auth/logout`
-- Logout deletes the server-side session
-- Logout clears the session cookie
-- Invalid or missing sessions return HTTP 401 with `UNAUTHENTICATED`
-- Wrong password and unknown email both return HTTP 401 with `INVALID_CREDENTIALS`
-- Password hashes and session hashes are never returned by the API
-- Full login -> session -> /auth/me -> logout -> unauthenticated flow tested successfully
-- TypeScript check passes with `npx.cmd tsc --noEmit`
-
-## Next Development Step
-
-Build reusable authentication protection for private API routes.
-
-Goal:
-
-- Protected routes should automatically require a valid session
-- Server should know which user is making the request
-- Then begin authorization / business access control so users can only access businesses they belong to
-
-## Protected Routes & Multi-Tenant Authorization - 2026-10-11
-
-Completed:
-
-- Added reusable authentication protection for private routes
-- Added `GET /businesses`
-- Authenticated users only receive businesses they belong to
-- Requests without a valid session return HTTP 401 `UNAUTHENTICATED`
-- Added reusable `requireBusinessMembership()` authorization helper
-- Added `GET /businesses/:businessId`
-- Users cannot access businesses they do not belong to
-- Unauthorized business access returns HTTP 404 `BUSINESS_NOT_FOUND`
-- Verified Multi-Tenant isolation using two separate users and businesses
-- TypeScript check passes with `npx.cmd tsc --noEmit`
-
-## Next Step
-
-Implement role-based business authorization.
-
-Roles currently available:
-- OWNER
-- ADMIN
-- MEMBER
-
-Goal:
-- Some actions will require OWNER
-- Some actions will allow OWNER or ADMIN
-- Read-only/basic actions may allow MEMBER
-
-## Role-Based Authorization - 2026-10-11
-
-Role-based business authorization is working end-to-end.
-
-Completed:
-
-- Added reusable `requireBusinessRole()` authorization helper
-- Business roles supported:
-  - OWNER
-  - ADMIN
-  - MEMBER
-- OWNER can perform business management actions
-- ADMIN can perform allowed management actions
-- MEMBER can access the business but cannot perform management actions
-- Insufficient role returns HTTP 403 with `INSUFFICIENT_PERMISSIONS`
-- Users outside the business continue to receive HTTP 404 `BUSINESS_NOT_FOUND`
-- Added protected business update route
-- Verified role behavior against real PostgreSQL data
-- Restored test memberships and business names after testing
-- TypeScript validation passes successfully
-
-## Current Security / Access Flow
-
-Request
-→ Session authentication
-→ User identification
-→ Business membership check
-→ Role authorization
-→ Requested business action
-
-## Next Development Step
-
-Begin business-level product configuration.
-
-Planned direction:
-- Business AI settings
-- Preferred reply language
-- Reply tone/style
-- Automatic vs approval-based replies
-- Prepare the business configuration that will later be used by the AI reply engine
-
-## Business AI Settings - 2026-10-11
-
-Added initial per-business AI configuration.
-
-Completed:
-- Added `BusinessAiSettings`
-- Added `ReplyLanguageMode`
-- Default language mode is `MATCH_CUSTOMER`
-- Replies should normally match the language of the customer comment/review
-- Added fallback language setting for cases where language cannot be reliably detected
-- Default fallback language is Hebrew (`he`)
-- Architecture supports additional languages such as English, Arabic, Russian and others
-- Added reply tone settings
-- Added reply mode settings
-- Default reply mode requires review before automatic publishing
-- Added optional custom business instructions
-- Migration `add_business_ai_settings` applied successfully
-- Prisma Client regenerated
-- TypeScript validation passes
-
-### Business AI Settings API
-
-Completed:
-- Added `GET /businesses/:businessId/ai-settings`
-- Added `PATCH /businesses/:businessId/ai-settings`
-- Missing settings are created automatically with safe defaults
-- OWNER and ADMIN can update AI settings
-- MEMBER can read settings but cannot modify them
-- MEMBER update attempt returns HTTP 403 `INSUFFICIENT_PERMISSIONS`
-- Hebrew custom instructions persist correctly in PostgreSQL
-- Reply language architecture supports Hebrew, English, Arabic, Russian and additional languages
-- Default behavior is to match the customer's language
-- AI settings API tested successfully end-to-end
-
-## Next Step
-
-Build the first AI reply generation engine.
-
-Goal:
-- Receive a customer comment/review
-- Load that business's AI settings
-- Determine reply language
-- Apply tone and custom instructions
-- Generate a suggested reply
-- Initially return the suggestion for review rather than publishing automatically
-
-## Product Backlog / Ideas
-
-- Handle mixed-language comments intelligently
-- Add additional reply tones if useful
-- Refine AI settings UX during frontend development
-- Consider additional business-specific AI preferences later
-- Allow businesses to control automatic reply timing:
-  immediate or delayed by a configurable number of minutes
-  - Adapt Hebrew grammatical gender when reliable signals exist
-- Prefer explicit linguistic clues from the customer's text
-- Use customer first name only as a secondary signal
-- Fall back to natural gender-neutral Hebrew when uncertain
-### Review intelligence
-- Detect mismatches between review text sentiment and star rating
-- Treat review text as the primary signal and star rating as a secondary signal
-- If text and rating strongly conflict, flag the review for manual review
-- Consider forcing `REVIEW_REQUIRED` when there is a strong rating/text mismatch
-- Surface a warning to the business when the customer may have selected the wrong star rating
-
-
-  ## Initial AI Reply Engine - 2026-10-14
-
-The first AI reply generation flow is working end-to-end.
-
-Completed:
-- Added official OpenAI Node.js SDK
-- Added configurable OpenAI model through environment variables
-- Added `src/lib/openai.ts`
-- Added `src/services/ai-reply.service.ts`
-- Added protected AI reply generation endpoint
-- AI engine loads per-business AI settings
-- Supports `MATCH_CUSTOMER` language behavior
-- Supports fallback language
-- Applies configured reply tone
-- Applies custom business instructions
-- Customer content is treated as untrusted input
-- AI is instructed not to follow prompt-injection attempts from customer text
-- AI is instructed not to invent facts, promises, discounts or policies
-- Generated replies are returned as suggestions only
-- No automatic publishing is performed yet
-- English positive review tested successfully
-- Hebrew positive review tested successfully
-- Hebrew negative review tested successfully
-- Negative feedback receives an appropriate empathetic response
-- `REVIEW_REQUIRED` remains the current safe default
-
-
-## Stored Customer Interactions + AI Reply Flow - 2026-10-16
-
-Completed:
-- Added `CustomerInteraction` database model
-- Added support for Facebook, Instagram and Google interactions
-- Added COMMENT and REVIEW interaction types
-- Added optional customer name and external customer ID
-- Added optional 1-5 star rating
-- Added reply lifecycle statuses
-- Added protection against duplicate platform interactions
-- Added endpoint for storing incoming interactions
-- Added endpoint for listing stored interactions
-- Connected stored interactions to the AI Reply Engine
-- AI now receives customer text, customer name and star rating
-- Written review text is treated as the primary sentiment signal
-- Star rating is treated as secondary context
-- Added cautious Hebrew grammatical-gender personalization
-- Generated AI suggestions are persisted in PostgreSQL
-- AI model used for the suggestion is persisted
-- `REVIEW_REQUIRED` businesses move generated replies to `PENDING_REVIEW`
-- End-to-end Google review test completed successfully
+6. עוצרים לפני שינוי ארכיטקטוני או פעולה מסוכנת.
+7. מריצים npx.cmd tsc --noEmit ב-checkpoints משמעותיים.
+8. מעדכנים את PROJECT_STATUS.md רק כשהמצב בפועל משתנה.
+9. מבצעים Git commit + push לאחר checkpoint משמעותי.
+המטרה: לעבוד בצורה יותר אוטונומית, יעילה ומהירה ככל שהפרויקט מתבגר, בלי לאבד שליטה על הארכיטקטורה ובלי להעמיס עשרות פעולות בבת אחת.

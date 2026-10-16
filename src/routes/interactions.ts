@@ -1,7 +1,10 @@
  import type { FastifyInstance } from "fastify";
 
 import { prisma } from "../lib/prisma.js";
-import { requireBusinessMembership } from "../lib/auth.js";
+  import {
+  requireBusinessMembership,
+  requireBusinessRole,
+} from "../lib/auth.js";
 import { generateAiReply } from "../services/ai-reply.service.js";
 
 interface BusinessParams {
@@ -229,4 +232,80 @@ export async function interactionRoutes(app: FastifyInstance) {
       }
     }
   );
-}
+  app.post<{
+  Params: InteractionParams;
+  Body: {
+    finalReply?: string;
+  };
+}>(
+  "/businesses/:businessId/interactions/:interactionId/approve-reply",
+  async (request, reply) => {
+    const access = await requireBusinessRole(
+      request,
+      reply,
+      request.params.businessId,
+      ["OWNER", "ADMIN"]
+    );
+
+    if (!access) {
+      return;
+    }
+
+    const interaction =
+      await prisma.customerInteraction.findFirst({
+        where: {
+          id: request.params.interactionId,
+          businessId: access.business.id,
+        },
+      });
+
+    if (!interaction) {
+      return reply.code(404).send({
+        code: "INTERACTION_NOT_FOUND",
+      });
+    }
+
+    if (interaction.replyStatus !== "PENDING_REVIEW") {
+      return reply.code(409).send({
+        code: "INTERACTION_NOT_PENDING_REVIEW",
+      });
+    }
+
+    if (!interaction.suggestedReply) {
+      return reply.code(409).send({
+        code: "SUGGESTED_REPLY_MISSING",
+      });
+    }
+
+    const providedFinalReply =
+      request.body?.finalReply?.trim();
+
+    if (
+      request.body?.finalReply !== undefined &&
+      !providedFinalReply
+    ) {
+      return reply.code(400).send({
+        code: "FINAL_REPLY_REQUIRED",
+      });
+    }
+
+    const finalReply =
+      providedFinalReply ?? interaction.suggestedReply;
+
+    const updatedInteraction =
+      await prisma.customerInteraction.update({
+        where: {
+          id: interaction.id,
+        },
+        data: {
+          finalReply,
+          replyStatus: "READY_TO_PUBLISH",
+        },
+      });
+
+    return reply.code(200).send({
+      interaction: updatedInteraction,
+    });
+  }
+);
+  }
