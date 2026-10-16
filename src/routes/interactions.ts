@@ -1,3 +1,5 @@
+ import { publishInteractionReply } from "../services/publishing.service.js";
+ 
  import type { FastifyInstance } from "fastify";
 
 import { prisma } from "../lib/prisma.js";
@@ -306,6 +308,83 @@ export async function interactionRoutes(app: FastifyInstance) {
     return reply.code(200).send({
       interaction: updatedInteraction,
     });
+  }
+);
+app.post<{ Params: InteractionParams }>(
+  "/businesses/:businessId/interactions/:interactionId/publish",
+  async (request, reply) => {
+    const access = await requireBusinessRole(
+      request,
+      reply,
+      request.params.businessId,
+      ["OWNER", "ADMIN"]
+    );
+
+    if (!access) {
+      return;
+    }
+
+    const interaction =
+      await prisma.customerInteraction.findFirst({
+        where: {
+          id: request.params.interactionId,
+          businessId: access.business.id,
+        },
+      });
+
+    if (!interaction) {
+      return reply.code(404).send({
+        code: "INTERACTION_NOT_FOUND",
+      });
+    }
+
+    if (interaction.replyStatus !== "READY_TO_PUBLISH") {
+      return reply.code(409).send({
+        code: "INTERACTION_NOT_READY_TO_PUBLISH",
+      });
+    }
+
+    if (!interaction.finalReply?.trim()) {
+      return reply.code(409).send({
+        code: "FINAL_REPLY_MISSING",
+      });
+    }
+
+    try {
+      const publishResult =
+        await publishInteractionReply(interaction);
+
+      const updatedInteraction =
+        await prisma.customerInteraction.update({
+          where: {
+            id: interaction.id,
+          },
+          data: {
+            replyStatus: "PUBLISHED",
+            publishedAt: publishResult.publishedAt,
+          },
+        });
+
+      return reply.code(200).send({
+        interaction: updatedInteraction,
+        publishingMode: "SIMULATED",
+      });
+    } catch (error) {
+      request.log.error(error);
+
+      await prisma.customerInteraction.update({
+        where: {
+          id: interaction.id,
+        },
+        data: {
+          replyStatus: "FAILED",
+        },
+      });
+
+      return reply.code(500).send({
+        code: "PUBLISH_FAILED",
+      });
+    }
   }
 );
   }

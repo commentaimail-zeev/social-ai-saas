@@ -296,6 +296,12 @@ PENDING_GENERATION → READY_TO_PUBLISH
 - AI suggestions can be accepted as-is or edited before approval
 - Approved reply is stored in `finalReply`
 - Approved interactions move to `READY_TO_PUBLISH`
+
+- Added publishing abstraction
+- Added simulated publishing flow for Google / Facebook / Instagram
+- READY_TO_PUBLISH interactions can move to PUBLISHED
+- publishedAt is stored after successful publish
+- Publishing is still simulated; no external platform API is called yet
 11. Working Method
 הפרויקט מתקדם ב-mini-sprints קטנים והגיוניים.
 בכל mini-sprint:
