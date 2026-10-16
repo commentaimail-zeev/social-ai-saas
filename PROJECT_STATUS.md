@@ -308,6 +308,25 @@ PENDING_GENERATION → READY_TO_PUBLISH
 - Duplicate publish attempts are blocked with HTTP 409
 - Regenerating AI replies after lifecycle progression is blocked with HTTP 409
 
+- Added `PlatformConnection` model
+- Added simulated Google / Facebook / Instagram connection infrastructure
+- Added list, connect and disconnect platform connection APIs
+- Platform reconnect reuses the existing connection instead of creating duplicates
+- Platform connection status lifecycle tested successfully
+- OAuth tokens and real external API connections are not implemented yet
+
+- Split platform access into `PlatformAuthorization` and `PlatformAccount`
+- Added `PlatformProvider` with `META` and `GOOGLE`
+- A single META authorization can support Facebook and Instagram accounts
+- GOOGLE authorizations only accept Google accounts
+- Added provider/platform compatibility validation
+- Added `platformAccountId` support for customer interactions
+- Platform authorization + account flow tested End-to-End
+- Provider mismatch is blocked with `PLATFORM_PROVIDER_MISMATCH`
+- OAuth and real external tokens are still not implemented
+
+
+
 11. Working Method
 הפרויקט מתקדם ב-mini-sprints קטנים והגיוניים.
 בכל mini-sprint:

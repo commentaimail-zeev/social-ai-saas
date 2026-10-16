@@ -35,7 +35,12 @@ enum SocialPlatform {
   GOOGLE
 }
 
-enum PlatformConnectionStatus {
+enum PlatformProvider {
+  META
+  GOOGLE
+}
+
+enum PlatformAuthorizationStatus {
   PENDING
   CONNECTED
   REAUTH_REQUIRED
@@ -73,10 +78,11 @@ model Business {
   id   String @id @default(cuid())
   name String
 
-  memberships         Membership[]
-  aiSettings          BusinessAiSettings?
-  interactions        CustomerInteraction[]
-  platformConnections PlatformConnection[]
+  memberships            Membership[]
+  aiSettings             BusinessAiSettings?
+  interactions           CustomerInteraction[]
+  platformAuthorizations PlatformAuthorization[]
+  platformAccounts       PlatformAccount[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -128,12 +134,63 @@ model BusinessAiSettings {
   updatedAt DateTime @updatedAt
 }
 
-model CustomerInteraction {
-  id         String          @id @default(cuid())
+model PlatformAuthorization {
+  id         String                      @id @default(cuid())
   businessId String
-  platform   SocialPlatform
-  type       InteractionType
-  externalId String
+  provider   PlatformProvider
+  status     PlatformAuthorizationStatus @default(PENDING)
+
+  externalUserId   String?
+  externalUserName String?
+
+  connectedAt    DateTime?
+  disconnectedAt DateTime?
+  lastRefreshAt  DateTime?
+
+  business Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  accounts PlatformAccount[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, provider, externalUserId])
+  @@index([businessId])
+  @@index([provider, status])
+}
+
+model PlatformAccount {
+  id              String         @id @default(cuid())
+  businessId      String
+  authorizationId String
+  platform        SocialPlatform
+
+  externalAccountId   String
+  externalAccountName String?
+
+  isActive   Boolean   @default(true)
+  selectedAt DateTime  @default(now())
+  lastSyncAt DateTime?
+
+  business      Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  authorization PlatformAuthorization @relation(fields: [authorizationId], references: [id], onDelete: Cascade)
+  interactions  CustomerInteraction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, platform, externalAccountId])
+  @@index([businessId])
+  @@index([authorizationId])
+  @@index([businessId, platform])
+}
+
+model CustomerInteraction {
+  id                String          @id @default(cuid())
+  businessId        String
+  platformAccountId String?
+  platform          SocialPlatform
+  type              InteractionType
+  externalId        String
 
   customerName       String?
   customerExternalId String?
@@ -148,35 +205,14 @@ model CustomerInteraction {
   receivedAt  DateTime  @default(now())
   publishedAt DateTime?
 
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business        Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  platformAccount PlatformAccount? @relation(fields: [platformAccountId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([businessId, platform, externalId])
   @@index([businessId, receivedAt])
+  @@index([platformAccountId])
   @@index([replyStatus])
-}
-
-model PlatformConnection {
-  id         String                   @id @default(cuid())
-  businessId String
-  platform   SocialPlatform
-  status     PlatformConnectionStatus @default(PENDING)
-
-  externalAccountId   String
-  externalAccountName String?
-
-  connectedAt    DateTime?
-  disconnectedAt DateTime?
-  lastSyncAt     DateTime?
-
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([businessId, platform, externalAccountId])
-  @@index([businessId])
-  @@index([platform, status])
 }

@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+ import type { FastifyInstance } from "fastify";
 
 import { prisma } from "../lib/prisma.js";
 import {
@@ -10,22 +10,39 @@ interface BusinessParams {
   businessId: string;
 }
 
-interface ConnectionParams {
+interface AuthorizationParams {
   businessId: string;
-  connectionId: string;
+  authorizationId: string;
 }
 
-interface CreatePlatformConnectionBody {
+interface CreateAuthorizationBody {
+  provider: "META" | "GOOGLE";
+  externalUserId: string;
+  externalUserName?: string;
+}
+
+interface AddPlatformAccountBody {
   platform: "FACEBOOK" | "INSTAGRAM" | "GOOGLE";
   externalAccountId: string;
   externalAccountName?: string;
+}
+
+function platformMatchesProvider(
+  provider: "META" | "GOOGLE",
+  platform: "FACEBOOK" | "INSTAGRAM" | "GOOGLE"
+) {
+  if (provider === "META") {
+    return platform === "FACEBOOK" || platform === "INSTAGRAM";
+  }
+
+  return platform === "GOOGLE";
 }
 
 export async function platformConnectionRoutes(
   app: FastifyInstance
 ) {
   app.get<{ Params: BusinessParams }>(
-    "/businesses/:businessId/platform-connections",
+    "/businesses/:businessId/platform-authorizations",
     async (request, reply) => {
       const access = await requireBusinessMembership(
         request,
@@ -37,10 +54,17 @@ export async function platformConnectionRoutes(
         return;
       }
 
-      const connections =
-        await prisma.platformConnection.findMany({
+      const authorizations =
+        await prisma.platformAuthorization.findMany({
           where: {
             businessId: access.business.id,
+          },
+          include: {
+            accounts: {
+              orderBy: {
+                selectedAt: "asc",
+              },
+            },
           },
           orderBy: {
             createdAt: "asc",
@@ -48,16 +72,115 @@ export async function platformConnectionRoutes(
         });
 
       return reply.code(200).send({
-        connections,
+        authorizations,
       });
     }
   );
 
   app.post<{
     Params: BusinessParams;
-    Body: CreatePlatformConnectionBody;
+    Body: CreateAuthorizationBody;
   }>(
-    "/businesses/:businessId/platform-connections",
+    "/businesses/:businessId/platform-authorizations",
+    async (request, reply) => {
+      const access = await requireBusinessRole(
+        request,
+        reply,
+        request.params.businessId,
+        ["OWNER", "ADMIN"]
+      );
+
+      if (!access) {
+        return;
+      }
+
+      const {
+        provider,
+        externalUserId,
+        externalUserName,
+      } = request.body ?? {};
+
+      if (!["META", "GOOGLE"].includes(provider)) {
+        return reply.code(400).send({
+          code: "INVALID_PLATFORM_PROVIDER",
+        });
+      }
+
+      const cleanExternalUserId =
+        externalUserId?.trim() ?? "";
+
+      if (!cleanExternalUserId) {
+        return reply.code(400).send({
+          code: "EXTERNAL_USER_ID_REQUIRED",
+        });
+      }
+
+      const existingAuthorization =
+        await prisma.platformAuthorization.findFirst({
+          where: {
+            businessId: access.business.id,
+            provider,
+            externalUserId: cleanExternalUserId,
+          },
+        });
+
+      if (
+        existingAuthorization &&
+        existingAuthorization.status !== "DISCONNECTED"
+      ) {
+        return reply.code(409).send({
+          code: "PLATFORM_AUTHORIZATION_ALREADY_EXISTS",
+        });
+      }
+
+      const now = new Date();
+
+      if (existingAuthorization) {
+        const authorization =
+          await prisma.platformAuthorization.update({
+            where: {
+              id: existingAuthorization.id,
+            },
+            data: {
+              status: "CONNECTED",
+              externalUserName:
+                externalUserName?.trim() || null,
+              connectedAt: now,
+              disconnectedAt: null,
+            },
+          });
+
+        return reply.code(200).send({
+          authorization,
+          authorizationMode: "SIMULATED",
+        });
+      }
+
+      const authorization =
+        await prisma.platformAuthorization.create({
+          data: {
+            businessId: access.business.id,
+            provider,
+            status: "CONNECTED",
+            externalUserId: cleanExternalUserId,
+            externalUserName:
+              externalUserName?.trim() || null,
+            connectedAt: now,
+          },
+        });
+
+      return reply.code(201).send({
+        authorization,
+        authorizationMode: "SIMULATED",
+      });
+    }
+  );
+
+  app.post<{
+    Params: AuthorizationParams;
+    Body: AddPlatformAccountBody;
+  }>(
+    "/businesses/:businessId/platform-authorizations/:authorizationId/accounts",
     async (request, reply) => {
       const access = await requireBusinessRole(
         request,
@@ -95,8 +218,39 @@ export async function platformConnectionRoutes(
         });
       }
 
-      const existingConnection =
-        await prisma.platformConnection.findUnique({
+      const authorization =
+        await prisma.platformAuthorization.findFirst({
+          where: {
+            id: request.params.authorizationId,
+            businessId: access.business.id,
+          },
+        });
+
+      if (!authorization) {
+        return reply.code(404).send({
+          code: "PLATFORM_AUTHORIZATION_NOT_FOUND",
+        });
+      }
+
+      if (authorization.status !== "CONNECTED") {
+        return reply.code(409).send({
+          code: "PLATFORM_AUTHORIZATION_NOT_CONNECTED",
+        });
+      }
+
+      if (
+        !platformMatchesProvider(
+          authorization.provider,
+          platform
+        )
+      ) {
+        return reply.code(400).send({
+          code: "PLATFORM_PROVIDER_MISMATCH",
+        });
+      }
+
+      const existingAccount =
+        await prisma.platformAccount.findUnique({
           where: {
             businessId_platform_externalAccountId: {
               businessId: access.business.id,
@@ -106,61 +260,57 @@ export async function platformConnectionRoutes(
           },
         });
 
-      if (
-        existingConnection &&
-        existingConnection.status !== "DISCONNECTED"
-      ) {
-        return reply.code(409).send({
-          code: "PLATFORM_CONNECTION_ALREADY_EXISTS",
-        });
-      }
+      if (existingAccount) {
+        if (
+          existingAccount.authorizationId !==
+          authorization.id
+        ) {
+          return reply.code(409).send({
+            code: "PLATFORM_ACCOUNT_AUTHORIZATION_CONFLICT",
+          });
+        }
 
-      const now = new Date();
-
-      if (existingConnection) {
-        const connection =
-          await prisma.platformConnection.update({
+        const account =
+          await prisma.platformAccount.update({
             where: {
-              id: existingConnection.id,
+              id: existingAccount.id,
             },
             data: {
               externalAccountName:
                 externalAccountName?.trim() || null,
-              status: "CONNECTED",
-              connectedAt: now,
-              disconnectedAt: null,
+              isActive: true,
+              selectedAt: new Date(),
             },
           });
 
         return reply.code(200).send({
-          connection,
-          connectionMode: "SIMULATED",
+          account,
+          accountMode: "SIMULATED",
         });
       }
 
-      const connection =
-        await prisma.platformConnection.create({
+      const account =
+        await prisma.platformAccount.create({
           data: {
             businessId: access.business.id,
+            authorizationId: authorization.id,
             platform,
             externalAccountId:
               cleanExternalAccountId,
             externalAccountName:
               externalAccountName?.trim() || null,
-            status: "CONNECTED",
-            connectedAt: now,
           },
         });
 
       return reply.code(201).send({
-        connection,
-        connectionMode: "SIMULATED",
+        account,
+        accountMode: "SIMULATED",
       });
     }
   );
 
-  app.post<{ Params: ConnectionParams }>(
-    "/businesses/:businessId/platform-connections/:connectionId/disconnect",
+  app.post<{ Params: AuthorizationParams }>(
+    "/businesses/:businessId/platform-authorizations/:authorizationId/disconnect",
     async (request, reply) => {
       const access = await requireBusinessRole(
         request,
@@ -173,30 +323,30 @@ export async function platformConnectionRoutes(
         return;
       }
 
-      const connection =
-        await prisma.platformConnection.findFirst({
+      const authorization =
+        await prisma.platformAuthorization.findFirst({
           where: {
-            id: request.params.connectionId,
+            id: request.params.authorizationId,
             businessId: access.business.id,
           },
         });
 
-      if (!connection) {
+      if (!authorization) {
         return reply.code(404).send({
-          code: "PLATFORM_CONNECTION_NOT_FOUND",
+          code: "PLATFORM_AUTHORIZATION_NOT_FOUND",
         });
       }
 
-      if (connection.status === "DISCONNECTED") {
+      if (authorization.status === "DISCONNECTED") {
         return reply.code(409).send({
-          code: "PLATFORM_CONNECTION_ALREADY_DISCONNECTED",
+          code: "PLATFORM_AUTHORIZATION_ALREADY_DISCONNECTED",
         });
       }
 
-      const updatedConnection =
-        await prisma.platformConnection.update({
+      const updatedAuthorization =
+        await prisma.platformAuthorization.update({
           where: {
-            id: connection.id,
+            id: authorization.id,
           },
           data: {
             status: "DISCONNECTED",
@@ -205,7 +355,7 @@ export async function platformConnectionRoutes(
         });
 
       return reply.code(200).send({
-        connection: updatedConnection,
+        authorization: updatedAuthorization,
       });
     }
   );
