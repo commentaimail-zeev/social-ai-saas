@@ -147,8 +147,9 @@ model PlatformAuthorization {
   disconnectedAt DateTime?
   lastRefreshAt  DateTime?
 
-  business Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  accounts PlatformAccount[]
+  business   Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  credential PlatformCredential?
+  accounts   PlatformAccount[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,6 +157,25 @@ model PlatformAuthorization {
   @@unique([businessId, provider, externalUserId])
   @@index([businessId])
   @@index([provider, status])
+}
+
+model PlatformCredential {
+  id              String @id @default(cuid())
+  authorizationId String @unique
+
+  accessTokenEncrypted  String
+  refreshTokenEncrypted String?
+
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+
+  tokenType String?
+  scopes    String[]
+
+  authorization PlatformAuthorization @relation(fields: [authorizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PlatformAccount {
